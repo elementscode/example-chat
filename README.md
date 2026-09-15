@@ -9,6 +9,10 @@ of how the pieces fit together.
 
 ## Create an app from it
 
+First, [install Elements](https://elements.dev/install) if you have not
+already. That is the only prerequisite: Elements brings its own Postgres,
+build system, test runner and package installer.
+
 ### Give it to your agent
 
 Paste this into Claude Code, or any agent that can run commands:
@@ -17,6 +21,9 @@ Paste this into Claude Code, or any agent that can run commands:
 Create an Elements app from this scaffold:
 
   elements create chat -scaffold=elementscode/example-chat
+
+If the `elements` command is missing, installation is at
+https://elements.dev/install
 
 Then move your working directory into it, start it with `elements start`
 as a tracked background task, and open http://localhost:4000 for me.
@@ -46,10 +53,9 @@ Open http://localhost:4000. There is nothing else to install: Elements
 brings its own Postgres, build system, test runner and package installer,
 and the first build creates and migrates the database for you.
 
-You need Elements installed first; see
-[elements.dev](https://elements.dev). The scaffold name accepts any GitHub
-spelling (`elementscode/example-chat`, the browser url, the clone url),
-and `@ref` pins a branch, tag or commit.
+The scaffold name accepts any GitHub spelling
+(`elementscode/example-chat`, the browser url, the clone url), and `@ref`
+pins a branch, tag or commit.
 
 ## First run
 

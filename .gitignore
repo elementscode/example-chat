@@ -3,10 +3,7 @@ node_modules/
 .elements/
 dist/
 
-# Generated per project by `elements create`, and rewritten when this app is
-# used as a scaffold. Not ours to ship: the agent files would arrive as notes
-# about someone else's app, and .claude/settings.json would hand a cloned
-# project tool permissions the user never granted.
+# Written per project by `elements create`.
 .claude/
 AGENTS.md
 CLAUDE.md

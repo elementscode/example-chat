@@ -9,18 +9,34 @@ of how the pieces fit together.
 
 ## Create an app from it
 
-You need Elements installed. Then:
+### Give it to your agent
 
-```bash
-elements create mychat -scaffold=elementscode/example-chat
+Paste this into Claude Code, or any agent that can run commands:
+
+```
+Create an Elements app from this scaffold:
+
+  elements create chat -scaffold=elementscode/example-chat
+
+Then move your working directory into it, start it with `elements start`
+as a tracked background task, and open http://localhost:4000 for me.
+Read the AGENTS.md it writes before you change anything.
 ```
 
-That creates `mychat/` in the current directory, with this app's code and
-its own fresh project id. Move into it and start the server:
+### Or do it yourself
 
 ```bash
-cd mychat
+elements create chat -scaffold=elementscode/example-chat
 ```
+
+That creates `chat/` in the current directory, with this app's code and
+its own fresh project id. Move into it:
+
+```bash
+cd chat
+```
+
+Start the server:
 
 ```bash
 elements start
@@ -30,8 +46,10 @@ Open http://localhost:4000. There is nothing else to install: Elements
 brings its own Postgres, build system, test runner and package installer,
 and the first build creates and migrates the database for you.
 
-The scaffold name accepts any GitHub spelling (`elementscode/example-chat`,
-the browser url, the clone url), and `@ref` pins a branch, tag or commit.
+You need Elements installed first; see
+[elements.dev](https://elements.dev). The scaffold name accepts any GitHub
+spelling (`elementscode/example-chat`, the browser url, the clone url),
+and `@ref` pins a branch, tag or commit.
 
 ## First run
 

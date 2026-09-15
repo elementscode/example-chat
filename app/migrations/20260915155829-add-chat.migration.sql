@@ -36,6 +36,37 @@ create trigger chatRoomsTouchUpdatedAt
   before update on chatRooms
   for each row execute function touchUpdatedAt();
 
+-- Every browser watching the sidebar listens on one unpartitioned channel, so
+-- a channel created by an rpc, a job, or `elements db` reaches all of them.
+-- The name here must match the one the chatRooms LiveTable declares.
+create or replace function chatRoomsNotify() returns trigger
+language plpgsql as $$
+declare
+  r record;
+begin
+  r := coalesce(new, old);
+
+  perform pg_notify(
+    channel_name('chatRooms'),
+    json_build_object(
+      'op', lower(tg_op),
+      'data', json_build_object(
+        'id', r.id,
+        'createdAt', json_build_object('$type', 'Date', '$value', (extract(epoch from r.createdAt) * 1000)::bigint),
+        'name', r.name,
+        'topic', r.topic
+      )
+    )::text
+  );
+
+  return r;
+end;
+$$;
+
+create trigger chatRoomsNotifyTrigger
+  after insert or update or delete on chatRooms
+  for each row execute function chatRoomsNotify();
+
 create table chatMessages (
   id uuid primary key default uuidGenerateV7(),
   createdAt timestamptz not null default now(),

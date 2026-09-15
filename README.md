@@ -89,7 +89,7 @@ Worth reading in this order:
 
 | File | What it shows |
 |---|---|
-| `app/migrations/*.migration.sql` | The schema, plus a `pg_notify` trigger so writes that bypass the app still reach open pages |
+| `app/migrations/*.migration.sql` | The schema, plus `pg_notify` triggers so writes that bypass the app still reach open pages |
 | `app/shared/services/chat.ts` | Two `LiveTable`s, one partitioned per channel, with authorization on the declaration |
 | `app/shared/services/auth.ts` | `@rpc` signin and signup; the password is compared inside Postgres and never reaches TypeScript |
 | `app/pages/room/index.ts` | A route that guards the session and opens a partitioned view |
@@ -103,8 +103,21 @@ template. The `delete` handler in `chat.ts` checks ownership, so the rule
 holds no matter which browser asks.
 
 **The channel partition is the security boundary.** `chatMessages.view({
-roomId })` opens one channel's stream; a browser in another channel never
-receives those rows.
+roomId })` opens one channel's stream, and each partition gets its own
+Postgres `NOTIFY` channel, so a browser reading `#design` never receives
+`#general` rows. `chatRooms` is the other shape: opened whole, one shared
+channel, because everyone sees every channel in the sidebar.
+
+**Writes from outside the app still land.** Both tables carry a notify
+trigger, so a row inserted by a background job, an `@rpc`, or `elements db`
+appears in every open page with no reload. Try it: with the app open, run
+`elements db` and
+
+```sql
+insert into chat_rooms (name, topic) values ('incidents', 'Pages and write-ups');
+```
+
+The channel shows up in the sidebar while you watch.
 
 **The feed renders from one flat loop.** Each row carries its own day
 break and grouping flag (`feedRows()` in `room/template.html`) rather than

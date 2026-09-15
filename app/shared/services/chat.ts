@@ -18,7 +18,12 @@ export interface Message {
   leaving?: boolean;
 }
 
-export let chatRooms = new LiveTable<Room>();
+// Opened whole with chatRooms.view(): every browser watches the same channel
+// and sees a new channel the moment anyone creates one. The name is pinned
+// because the migration's trigger has to notify the same string.
+export let chatRooms = new LiveTable<Room>({
+  channel: () => "chatRooms",
+});
 
 export let chatMessages: LiveTable<Message> = new LiveTable<Message>({
   channel: (partition) =>

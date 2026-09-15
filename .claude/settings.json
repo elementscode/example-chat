@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(elements:*)",
-      "Bash(node:*)",
-      "Bash(psql:*)"
-    ]
-  }
-}

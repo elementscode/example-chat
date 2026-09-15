@@ -1,0 +1,271 @@
+import "./style.css";
+import { LiveView, LifecycleEvent, session, redirect } from "@elements/app";
+import { Room, Message, createRoom } from "#app/shared/services/chat";
+import { logoutUser } from "#app/shared/services/auth";
+import config from "#config";
+
+// event handlers
+
+function onSend(feed: LiveView<Message>, draft: { value: string }) {
+  if (draft.value.trim().length === 0) {
+    return;
+  }
+
+  feed.insert(
+    {
+      userId: session.getOrThrow("userId"),
+      userName: session.getOrThrow("userName"),
+      body: draft.value.trim(),
+      createdAt: new Date(),
+    },
+    () => draft.value = "",
+  );
+}
+
+function onAddChannel(form: { name: string; error: string }) {
+  try {
+    let id = createRoom(form.name, "");
+    form.name = "";
+    form.error = "";
+    redirect(`/rooms/${id}`);
+  } catch (err: any) {
+    form.error = err.message;
+  }
+}
+
+// The runtime detaches a node synchronously, so a leave animation is driven
+// by reactive state: flip a flag, let the css play, delete on animationend.
+// See `elements man html/events`.
+function onStartLeaving(m: Message) {
+  m.leaving = true;
+}
+
+function onLeaveEnd(feed: LiveView<Message>, m: Message) {
+  if (m.leaving) {
+    feed.delete(m);
+  }
+}
+
+function onSignOut() {
+  logoutUser();
+  redirect("/signin");
+}
+
+// Every row that lands pins the feed to the newest message, including the
+// whole first render. The frame callback waits for the row to be laid out,
+// so scrollHeight already counts it.
+function onPin(e: LifecycleEvent) {
+  let feed = (e.target as Element).closest(".chat-feed");
+
+  if (!feed) {
+    return;
+  }
+
+  requestAnimationFrame(() => {
+    feed.scrollTop = feed.scrollHeight;
+  });
+}
+
+// helpers
+
+interface FeedRow {
+  id: string;
+  m: Message;
+  /** A label when this row opens a new calendar day, otherwise "". */
+  day: string;
+  /** True when this row continues the run above it. */
+  grouped: boolean;
+}
+
+function dayOf(m: Message): string {
+  return m.createdAt.toDateString();
+}
+
+function dayLabel(key: string): string {
+  if (key === new Date().toDateString()) {
+    return "Today";
+  }
+
+  if (key === new Date(Date.now() - 86400000).toDateString()) {
+    return "Yesterday";
+  }
+
+  return new Date(key).toLocaleDateString([], {
+    weekday: "long",
+    month: "long",
+    day: "numeric",
+  });
+}
+
+// One pass, oldest first. Each row carries its own day break and whether it
+// continues the run above it, so the feed renders from a single flat loop:
+// a nested e:for rebuilds every row on each new message.
+function feedRows(messages: LiveView<Message>): FeedRow[] {
+  let sorted = messages.sort((a, b) => +a.createdAt - +b.createdAt);
+  let rows: FeedRow[] = [];
+
+  for (let i = 0; i < sorted.length; i++) {
+    let m = sorted[i];
+    let prev = i > 0 ? sorted[i - 1] : undefined;
+    let opensDay = !prev || dayOf(prev) !== dayOf(m);
+
+    rows.push({
+      id: m.id,
+      m,
+      day: opensDay ? dayLabel(dayOf(m)) : "",
+      grouped: !opensDay
+        && prev !== undefined
+        && prev.userName === m.userName
+        && +m.createdAt - +prev.createdAt < 5 * 60 * 1000,
+    });
+  }
+
+  return rows;
+}
+
+function initial(name: string): string {
+  return name.slice(0, 1);
+}
+
+// Avatar hues sit in a 100-degree band around the Elements blue rather than
+// the whole wheel, so a channel full of people still reads as one palette.
+function hue(name: string): string {
+  let n = 0;
+
+  for (let i = 0; i < name.length; i++) {
+    n = (n * 31 + name.charCodeAt(i)) % 100;
+  }
+
+  return `--avatar-h: ${190 + n}`;
+}
+
+function clock(at: Date): string {
+  return at.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+}
+
+function counted(n: number): string {
+  return n === 1 ? "1 message" : `${n} messages`;
+}
+
+// templates
+
+<html class="page-room"
+      (current: Room,
+       rooms: LiveView<Room>,
+       messages: LiveView<Message>,
+       private draft: { value: string } = { value: "" },
+       private form: { name: string; error: string } = { name: "", error: "" })>
+  <body>
+    <div class="app has-sidebar is-fixed chat">
+      <aside class="chat-sidebar">
+        <a class="chat-workspace" href="/">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"
+               stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 9.9 9.9 0 0 1-3.9-.8L3 21l1.9-4.6A8.4 8.4 0 0 1 12 3.1a8.4 8.4 0 0 1 9 8.4z"/>
+          </svg>
+          {config.public.appName}
+        </a>
+
+        <nav class="chat-nav">
+          <p class="chat-nav-label">Channels</p>
+
+          <ul class="chat-channels">
+            <li e:for={r of rooms.sort((a, b) => +a.createdAt - +b.createdAt)}>
+              <a class={["chat-channel", r.id === current.id && "is-active"]}
+                 href={`/rooms/${r.id}`}
+                 aria-label={`#${r.name}`}
+                 title={r.topic}><span class="hash">#</span>{r.name}</a>
+            </li>
+          </ul>
+
+          <form class="chat-new stack is-xs" onsubmit={() => onAddChannel(form)}>
+            <input value={form.name} placeholder="+ new channel" autocomplete="off">
+            <p e:if={form.error} class="error">{form.error}</p>
+          </form>
+        </nav>
+
+        <div class="chat-me">
+          <span class="avatar is-sm" style={hue(session.get("userName") ?? "")}>
+            {initial(session.get("userName") ?? "")}
+          </span>
+          <span class="chat-me-name">{session.get("userName")}</span>
+          <button class="chat-signout" onclick={() => onSignOut()}>Sign out</button>
+        </div>
+      </aside>
+
+      <div class="app-main">
+        <header class="chat-head">
+          <h1>#{current.name}</h1>
+          <p class="topic">{current.topic}</p>
+          <span class="count">{counted(messages.length)}</span>
+        </header>
+
+        <div class="chat-feed">
+          <div class="chat-intro">
+            <div class="badge">#</div>
+            <h2>#{current.name}</h2>
+            <p e:if={current.topic}>{current.topic} — this is the beginning of the channel.</p>
+            <p e:else>This is the very beginning of the #{current.name} channel.</p>
+          </div>
+
+          <MessageRow e:for={r of feedRows(messages)} e:key={(r) => r.id} {r} feed={messages} />
+        </div>
+
+        <form class="chat-composer" onsubmit={() => onSend(messages, draft)}>
+          <div class="chat-composer-box">
+            <input value={draft.value}
+                   placeholder={`Message #${current.name}`}
+                   autocomplete="off"
+                   focus={true}>
+            <button type="submit"
+                    class="is-primary chat-send"
+                    aria-label="Send"
+                    disabled={draft.value.trim().length === 0}>
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                   stroke="currentColor" stroke-width="2.5"
+                   stroke-linecap="round" stroke-linejoin="round">
+                <path d="M5 12h13M12 5l7 7-7 7"/>
+              </svg>
+            </button>
+          </div>
+
+          <p class="chat-hint">Press <kbd>Enter</kbd> to send.</p>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>
+
+<MessageRow (r: FeedRow, feed: LiveView<Message>)>
+  <div class="msg-wrap">
+    <p e:if={r.day} class="chat-day"><span>{r.day}</span></p>
+
+    <article class={["msg", r.grouped && "is-grouped", r.m.leaving && "is-leaving"]}
+             oninsert={onPin}
+             onanimationend={() => onLeaveEnd(feed, r.m)}>
+      <span e:if={r.grouped} class="msg-gutter">{clock(r.m.createdAt)}</span>
+      <span e:else class="avatar" style={hue(r.m.userName)}>{initial(r.m.userName)}</span>
+
+      <div>
+        <div e:if={!r.grouped} class="msg-head">
+          <span class="msg-author">{r.m.userName}</span>
+          <span class="msg-time">{clock(r.m.createdAt)}</span>
+        </div>
+
+        <div class="msg-body">{r.m.body}</div>
+      </div>
+
+      <button e:if={r.m.userId === session.get("userId")}
+              class="msg-delete"
+              aria-label="Delete message"
+              onclick={() => onStartLeaving(r.m)}>
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2"
+             stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/>
+        </svg>
+      </button>
+    </article>
+  </div>
+</MessageRow>

@@ -1,0 +1,56 @@
+import "./style.css";
+import { session, redirect } from "@elements/app";
+import { signinUser } from "#app/shared/services/auth";
+import config from "#config";
+import { Mark } from "#app/shared/templates/mark";
+
+function attemptSignin(email: string, password: string): string {
+  try {
+    signinUser(email, password);
+    redirect("/");
+    return "";
+  } catch (err: any) {
+    return err.message;
+  }
+}
+
+<html class="page-signin"
+      (private email: string = "",
+       private password: string = "",
+       private error: string = "")>
+  <body>
+    <main class="auth">
+      <div class="auth-panel stack is-lg">
+        <div class="stack is-sm">
+          <Mark />
+          <h1 class="auth-title">Sign in to your workspace</h1>
+          <p class="auth-sub">Pick up where your team left off.</p>
+        </div>
+
+        <div class="auth-card">
+          <form class="stack is-md" onsubmit={() => {
+            error = attemptSignin(email, password);
+          }}>
+            <p e:if={error} class="error">{error}</p>
+
+            <div class="field">
+              <label>Email</label>
+              <input type="email" value={email} placeholder="you@company.com" required>
+            </div>
+
+            <div class="field">
+              <label>Password</label>
+              <input type="password" value={password} placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="is-primary is-lg is-block">Sign in</button>
+          </form>
+        </div>
+
+        <p class="auth-alt">
+          New to {config.public.appName}? <a href="/signup">Create an account</a>
+        </p>
+      </div>
+    </main>
+  </body>
+</html>

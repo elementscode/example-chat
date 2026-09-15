@@ -1,0 +1,61 @@
+import "./style.css";
+import { session, redirect } from "@elements/app";
+import { signupUser, userNameFromEmail } from "#app/shared/services/auth";
+import { Mark } from "#app/shared/templates/mark";
+
+function attemptSignup(email: string, password: string): string {
+  try {
+    signupUser(email, password);
+    redirect("/");
+    return "";
+  } catch (err: any) {
+    return err.message;
+  }
+}
+
+function previewName(email: string): string {
+  let name = userNameFromEmail(email);
+  return name ? `You'll show up as @${name}` : "";
+}
+
+<html class="page-signup"
+      (private email: string = "",
+       private password: string = "",
+       private error: string = "")>
+  <body>
+    <main class="auth">
+      <div class="auth-panel stack is-lg">
+        <div class="stack is-sm">
+          <Mark />
+          <h1 class="auth-title">Create your account</h1>
+          <p class="auth-sub">Free, and takes about ten seconds.</p>
+        </div>
+
+        <div class="auth-card">
+          <form class="stack is-md" onsubmit={() => {
+            error = attemptSignup(email, password);
+          }}>
+            <p e:if={error} class="error">{error}</p>
+
+            <div class="field">
+              <label>Email</label>
+              <input type="email" value={email} placeholder="you@company.com" required>
+              <p e:if={previewName(email)} class="hint">{previewName(email)}</p>
+            </div>
+
+            <div class="field">
+              <label>Password</label>
+              <input type="password" value={password} placeholder="At least 8 characters" required>
+            </div>
+
+            <button type="submit" class="is-primary is-lg is-block">Create account</button>
+          </form>
+        </div>
+
+        <p class="auth-alt">
+          Already have an account? <a href="/signin">Sign in</a>
+        </p>
+      </div>
+    </main>
+  </body>
+</html>

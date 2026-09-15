@@ -1,0 +1,52 @@
+import "./style.css";
+import favicon from "#app/shared/assets/favicons/favicon.svg";
+
+<html class="page-home">
+  <head>
+    <title>Welcome to Elements!</title>
+    <link rel="icon" type="image/svg+xml" href={favicon} />
+  </head>
+  <body>
+    <div class="app home-shell">
+      <main class="app-main center home-main">
+        <div class="home-hero stack is-2xl">
+          <div class="home-status row">
+            <span class="pill is-success">
+              <span class="pill-dot"></span>
+              app running
+            </span>
+            <span class="home-version">elements@0.5.0</span>
+          </div>
+
+          <h1 class="home-title">
+            You're running<br>on <span class="home-accent">elements.</span>
+          </h1>
+
+          <div class="home-edit">
+            <p class="home-path">app/pages/home/template.html</p>
+            <p class="home-hint">
+              Edit this file and see the results <em>instantly</em>.
+            </p>
+          </div>
+        </div>
+      </main>
+
+      <footer class="home-footer">
+        <div class="home-footer-inner cluster">
+          <a href="https://elements.dev" target="_blank" rel="noopener" class="home-brand row">
+            <span class="home-mark">
+              <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                <rect width="24" height="24" rx="3.5" fill="currentColor"/>
+                <path d="M9 6 L15 12 L9 18" stroke="#ffffff" stroke-width="3.25" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+            </span>
+            elements
+          </a>
+          <nav class="cluster">
+            <a href="https://elements.dev/learn" target="_blank" rel="noopener">Learn</a>
+          </nav>
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

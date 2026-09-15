@@ -1,0 +1,38 @@
+@layer tokens {
+  :root {
+    /* The brand ramp and every accent token come from
+       @elements/style/themes/elements, imported in page.css. What is left
+       here is the chat shell's own surfaces: a deep Elements navy that stays
+       dark in both modes, the way a chat sidebar reads as a sidebar. */
+
+    --chat-sidebar: oklch(0.26 0.052 235);
+    --chat-sidebar-deep: oklch(0.21 0.045 235);
+    --chat-sidebar-ink: oklch(0.97 0.010 235);
+    --chat-sidebar-dim: oklch(0.76 0.028 235);
+    --chat-sidebar-rule: oklch(0.34 0.048 235);
+    --chat-sidebar-hover: oklch(0.32 0.058 235);
+
+    /* Avatars stay inside a band around the brand hue instead of running the
+       whole colour wheel, so a busy channel reads as one palette. */
+    --avatar-l: 0.52;
+    --avatar-c: 0.105;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --chat-sidebar: oklch(0.21 0.042 235);
+      --chat-sidebar-deep: oklch(0.17 0.036 235);
+      --chat-sidebar-rule: oklch(0.29 0.042 235);
+      --chat-sidebar-hover: oklch(0.27 0.05 235);
+      --avatar-l: 0.56;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --chat-sidebar: oklch(0.21 0.042 235);
+    --chat-sidebar-deep: oklch(0.17 0.036 235);
+    --chat-sidebar-rule: oklch(0.29 0.042 235);
+    --chat-sidebar-hover: oklch(0.27 0.05 235);
+    --avatar-l: 0.56;
+  }
+}

@@ -1,0 +1,562 @@
+@import "./page.css";
+
+/* The workspace shell: aubergine sidebar, message feed that scrolls under a
+   fixed channel header, composer pinned to the bottom. */
+
+.chat {
+  --sidebar-width: 17rem;
+  background: var(--bg);
+}
+
+/* SIDEBAR ------------------------------------------------------------ */
+
+.chat-sidebar {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  /* A grid item defaults to min-width: auto, which sizes it to its widest
+     content. Without this the phone channel strip widens the whole page
+     instead of scrolling inside itself. */
+  min-width: 0;
+  background: var(--chat-sidebar);
+  color: var(--chat-sidebar-ink);
+  border-right: 1px solid var(--chat-sidebar-rule);
+}
+
+.chat-workspace {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border-bottom: 1px solid var(--chat-sidebar-rule);
+  font-size: var(--text-md);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.chat-workspace svg {
+  color: var(--brand-300);
+  flex: none;
+}
+
+a.chat-workspace {
+  color: var(--chat-sidebar-ink);
+  text-decoration: none;
+  transition: background var(--duration-fast) var(--ease-out);
+}
+
+a.chat-workspace:hover {
+  background: var(--chat-sidebar-hover);
+  text-decoration: none;
+}
+
+.chat-nav {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-4) var(--space-2);
+}
+
+.chat-nav-label {
+  padding: 0 var(--space-2) var(--space-2);
+  font-size: var(--text-xs);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wider);
+  color: var(--chat-sidebar-dim);
+}
+
+.chat-channels {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.chat-channel {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-1-5) var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--chat-sidebar-dim);
+  text-decoration: none;
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  transition: background var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+}
+
+.chat-channel:hover {
+  background: var(--chat-sidebar-hover);
+  color: var(--chat-sidebar-ink);
+  text-decoration: none;
+}
+
+.chat-channel.is-active {
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: var(--weight-medium);
+}
+
+.chat-channel .hash {
+  opacity: 0.65;
+  font-weight: var(--weight-regular);
+}
+
+.chat-new {
+  margin-top: var(--space-4);
+  padding: 0 var(--space-2);
+  gap: var(--space-2);
+}
+
+.chat-new input {
+  background: var(--chat-sidebar-deep);
+  border-color: var(--chat-sidebar-rule);
+  color: var(--chat-sidebar-ink);
+  height: 2rem;
+  font-size: var(--text-sm);
+}
+
+.chat-new input::placeholder {
+  color: var(--chat-sidebar-dim);
+}
+
+.chat-new input:hover {
+  border-color: var(--brand-400);
+}
+
+.chat-new .error {
+  font-size: var(--text-xs);
+  color: var(--brand-300);
+}
+
+.chat-me {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  border-top: 1px solid var(--chat-sidebar-rule);
+}
+
+.chat-me-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  font-weight: var(--weight-medium);
+}
+
+.chat-signout {
+  background: transparent;
+  border-color: var(--chat-sidebar-rule);
+  color: var(--chat-sidebar-dim);
+  height: 1.75rem;
+  padding-inline: var(--space-2);
+  font-size: var(--text-xs);
+}
+
+.chat-signout:hover {
+  background: var(--chat-sidebar-hover);
+  border-color: var(--chat-sidebar-hover);
+  color: var(--chat-sidebar-ink);
+}
+
+/* AVATARS ------------------------------------------------------------ */
+
+.avatar {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: var(--radius-md);
+  background: linear-gradient(
+    145deg,
+    oklch(calc(var(--avatar-l) + 0.06) var(--avatar-c) var(--avatar-h, 235)),
+    oklch(var(--avatar-l) var(--avatar-c) calc(var(--avatar-h, 235) + 16))
+  );
+  color: var(--white);
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  text-transform: uppercase;
+  user-select: none;
+}
+
+.avatar.is-sm {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: var(--radius-sm);
+  font-size: var(--text-2xs);
+}
+
+/* CHANNEL HEADER ----------------------------------------------------- */
+
+.chat-head {
+  flex: none;
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  padding: var(--space-4) var(--space-6);
+  border-bottom: 1px solid var(--rule);
+  background: var(--bg);
+}
+
+.chat-head h1 {
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.chat-head .topic {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-sm);
+  color: var(--ink-dim);
+}
+
+.chat-head .count {
+  flex: none;
+  font-size: var(--text-xs);
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* FEED --------------------------------------------------------------- */
+
+.chat-feed {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-anchor: none;
+  padding: 0 var(--space-6) var(--space-5);
+  display: flex;
+  flex-direction: column;
+}
+
+.chat-intro {
+  padding: var(--space-8) 0 var(--space-5);
+}
+
+.chat-intro .badge {
+  display: grid;
+  place-items: center;
+  width: 3rem;
+  height: 3rem;
+  margin-bottom: var(--space-3);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  line-height: 1;
+}
+
+.chat-intro h2 {
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.chat-intro p {
+  margin-top: var(--space-1);
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+  max-width: var(--measure);
+}
+
+/* Day divider: a label centered on a hairline. */
+
+.chat-day {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin: var(--space-5) 0 var(--space-3);
+}
+
+.chat-day::before,
+.chat-day::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background: var(--rule-soft);
+}
+
+.chat-day span {
+  flex: none;
+  padding: var(--space-0-5) var(--space-3);
+  border: 1px solid var(--rule-soft);
+  border-radius: var(--radius-full);
+  background: var(--bg);
+  font-size: var(--text-2xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--ink-dim);
+}
+
+/* MESSAGES ----------------------------------------------------------- */
+
+/* The wrapper carries a row's optional day divider. `contents` keeps both
+   the divider and the message as direct children of the feed's flex column,
+   so the wrapper adds no layout of its own. */
+
+.msg-wrap {
+  display: contents;
+}
+
+.msg {
+  display: grid;
+  grid-template-columns: 2.25rem 1fr auto;
+  gap: var(--space-3);
+  padding: var(--space-1-5) var(--space-2);
+  border-radius: var(--radius-md);
+  animation: msg-enter var(--duration-normal) var(--ease-out) both;
+}
+
+@keyframes msg-enter {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+/* The row stays mounted while this plays; onanimationend does the delete. */
+
+.msg.is-leaving {
+  animation: msg-leave var(--duration-normal) var(--ease-out) forwards;
+}
+
+@keyframes msg-leave {
+  to {
+    opacity: 0;
+    transform: translateX(1.5rem);
+  }
+}
+
+.msg-delete {
+  align-self: start;
+  width: 1.75rem;
+  height: 1.75rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border-color: transparent;
+  background: transparent;
+  color: var(--ink-faint);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out),
+              color var(--duration-fast) var(--ease-out);
+}
+
+.msg:hover .msg-delete,
+.msg-delete:focus-visible {
+  opacity: 1;
+}
+
+.msg-delete:hover {
+  color: var(--danger);
+  border-color: var(--rule);
+  background: var(--bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .msg {
+    animation-duration: 1ms;
+  }
+}
+
+.msg:hover {
+  background: var(--bg-soft);
+}
+
+/* A run of messages from one author drops the repeated avatar and name, and
+   parks the timestamp in the gutter where it shows on hover. */
+
+.msg.is-grouped {
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.msg-gutter {
+  display: grid;
+  place-items: center;
+  align-self: start;
+  padding-top: 2px;
+  font-size: var(--text-2xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-faint);
+  opacity: 0;
+  transition: opacity var(--duration-fast) var(--ease-out);
+}
+
+.msg:hover .msg-gutter {
+  opacity: 1;
+}
+
+.msg-head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  line-height: var(--leading-snug);
+}
+
+.msg-author {
+  font-size: var(--text-sm);
+  font-weight: var(--weight-semibold);
+  color: var(--ink);
+}
+
+.msg-time {
+  font-size: var(--text-2xs);
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.msg-body {
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  color: var(--ink-soft);
+  overflow-wrap: anywhere;
+}
+
+/* COMPOSER ----------------------------------------------------------- */
+
+.chat-composer {
+  flex: none;
+  padding: 0 var(--space-6) var(--space-6);
+  gap: var(--space-2);
+}
+
+.chat-composer-box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--duration-fast) var(--ease-out),
+              box-shadow var(--duration-fast) var(--ease-out);
+}
+
+.chat-composer-box:focus-within {
+  border-color: var(--accent);
+  box-shadow: var(--shadow-sm);
+}
+
+.chat-composer input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+  height: 2rem;
+}
+
+.chat-composer input:hover,
+.chat-composer input:focus {
+  border: 0;
+  box-shadow: none;
+  outline: none;
+}
+
+.chat-send {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  transition: transform var(--duration-fast) var(--ease-spring);
+}
+
+.chat-send:disabled {
+  opacity: 0.4;
+}
+
+.chat-send:not(:disabled):hover {
+  transform: translateX(1px);
+}
+
+.chat-hint {
+  padding-top: var(--space-2);
+  font-size: var(--text-2xs);
+  color: var(--ink-faint);
+}
+
+.chat-hint kbd {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  padding: 1px var(--space-1);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-xs);
+  background: var(--bg-muted);
+  color: var(--ink-dim);
+}
+
+/* Phone: the sidebar becomes a bar. The channel list turns into a single
+   horizontal strip so every channel and the new-channel field stay reachable;
+   a clipped vertical column hides the ones past the fold. */
+
+@media (max-width: 48rem) {
+  .chat-nav {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding: var(--space-2) var(--space-3);
+    border-bottom: 1px solid var(--chat-sidebar-rule);
+  }
+
+  .chat-nav-label {
+    display: none;
+  }
+
+  .chat-channels {
+    flex-direction: row;
+    gap: var(--space-1);
+  }
+
+  .chat-channel {
+    white-space: nowrap;
+    border-radius: var(--radius-full);
+    padding-inline: var(--space-3);
+  }
+
+  .chat-new {
+    margin-top: 0;
+    padding: 0;
+    flex: none;
+  }
+
+  .chat-new input {
+    width: 9rem;
+  }
+
+  .chat-workspace {
+    padding-block: var(--space-3);
+  }
+
+  .chat-me {
+    border-top: 0;
+    padding-block: var(--space-2);
+  }
+
+  .chat-head,
+  .chat-feed,
+  .chat-composer {
+    padding-inline: var(--space-4);
+  }
+}

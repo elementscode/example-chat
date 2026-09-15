@@ -1,0 +1,68 @@
+@import "./page.css";
+
+/* The signin and signup pages share one look: a centered card on a tinted
+   field, with the product mark above it. */
+
+.auth {
+  min-height: 100dvh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-8) var(--space-4);
+  background:
+    radial-gradient(
+      ellipse 80rem 40rem at 50% -10%,
+      var(--accent-soft),
+      transparent 70%
+    ),
+    var(--bg-canvas);
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 25rem;
+}
+
+.auth-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  font-size: var(--text-lg);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+}
+
+.auth-mark svg {
+  color: var(--accent);
+}
+
+.auth-title {
+  text-align: center;
+  font-size: var(--text-2xl);
+  font-weight: var(--weight-semibold);
+  letter-spacing: var(--tracking-tight);
+}
+
+.auth-sub {
+  text-align: center;
+  color: var(--ink-soft);
+}
+
+.auth-card {
+  background: var(--bg-elevated);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-6);
+}
+
+.auth-alt {
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: var(--text-sm);
+}
+
+.auth-signed-in {
+  text-align: center;
+}

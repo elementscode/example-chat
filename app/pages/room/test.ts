@@ -1,5 +1,6 @@
 import { test, assert, equal, sql, session, AuthError } from "@elements/app";
 import { chatMessages, Message } from "#app/shared/services/chat";
+import { joinAsGuest } from "#app/shared/services/auth";
 
 function seedUser(name: string): string {
   return sql<{ id: string }>(
@@ -20,7 +21,10 @@ function post(room: string, userId: string, userName: string, body: string) {
 }
 
 test("room", () => {
-  test("an anonymous visitor cannot post", () => {
+  // The page is open to anyone, but a write still needs a session. The
+  // composer calls joinAsGuest() before it inserts, so a visitor who never
+  // signs up posts under a guest name rather than under nothing at all.
+  test("a post with no session at all is refused", () => {
     let threw = false;
 
     try {
@@ -44,6 +48,44 @@ test("room", () => {
     ).firstOrThrow();
 
     equal(row.body, "hello from a test");
+  });
+
+  test("a guest posts without signing up", () => {
+    joinAsGuest();
+
+    let userId = session.getOrThrow("userId");
+    let userName = session.getOrThrow("userName");
+
+    post("general", userId, userName, "hello from a guest");
+
+    let row = sql<{ body: string; userName: string }>(
+      `select body, userName from chatMessages where userId = ${userId}`,
+    ).firstOrThrow();
+
+    equal(row.body, "hello from a guest");
+    equal(row.userName, userName);
+  });
+
+  test("a guest can delete the message they posted", () => {
+    joinAsGuest();
+
+    let userId = session.getOrThrow("userId");
+    let room = roomId("general");
+
+    post("general", userId, session.getOrThrow("userName"), "mine, briefly");
+
+    let row = sql<Message>(
+      `select id, createdAt, roomId, userId, userName, body
+       from chatMessages where userId = ${userId}`,
+    ).firstOrThrow();
+
+    chatMessages.view({ roomId: room }).delete(row);
+
+    equal(
+      sql<{ n: number }>(`select count(*) as n from chatMessages where id = ${row.id}`)
+        .firstOrThrow().n,
+      0,
+    );
   });
 
   test("a message lands only in the channel it was posted to", () => {

@@ -1,5 +1,6 @@
 import { test, assert, equal, sql, session, AuthError, ValidationError } from "@elements/app";
 import { createRoom, channelSlug } from "#app/shared/services/chat";
+import { joinAsGuest } from "#app/shared/services/auth";
 
 test("home", () => {
   test("a fresh install has a channel to open on", () => {
@@ -26,6 +27,18 @@ test("home", () => {
       sql<{ n: number }>(`select count(*) as n from chatRooms where name = 'secret'`)
         .firstOrThrow().n,
       0,
+    );
+  });
+
+  test("a guest creates a channel too", () => {
+    joinAsGuest();
+
+    let id = createRoom("Guest Lounge", "");
+
+    equal(
+      sql<{ name: string }>(`select name from chatRooms where id = ${id}`)
+        .firstOrThrow().name,
+      "guest-lounge",
     );
   });
 

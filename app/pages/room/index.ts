@@ -1,12 +1,10 @@
-import { Request, Response, sql, session, redirect } from "@elements/app";
+import { Request, Response, sql } from "@elements/app";
 import html from "./template";
 import { Room, chatRooms, chatMessages } from "#app/shared/services/chat";
 
+// Open to anyone. An anonymous visitor reads the channel and posts under a
+// guest name; see joinAsGuest in the auth service.
 export default function route(req: Request, res: Response) {
-  if (!session.isLoggedIn()) {
-    return redirect("/signin");
-  }
-
   let roomId = req.params.id;
 
   let current = sql<Room>(

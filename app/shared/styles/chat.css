@@ -160,6 +160,12 @@ a.chat-workspace:hover {
   font-size: var(--text-xs);
 }
 
+a.chat-signout {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
 .chat-signout:hover {
   background: var(--chat-sidebar-hover);
   border-color: var(--chat-sidebar-hover);
@@ -491,6 +497,17 @@ a.chat-workspace:hover {
   padding-top: var(--space-2);
   font-size: var(--text-2xs);
   color: var(--ink-faint);
+}
+
+/* The guest line under the composer carries a signup link, so it is a touch
+   louder than the plain hint it replaces. */
+.chat-hint a {
+  color: var(--accent-deep);
+  text-decoration: none;
+}
+
+.chat-hint a:hover {
+  text-decoration: underline;
 }
 
 .chat-hint kbd {

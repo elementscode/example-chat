@@ -7,6 +7,8 @@ declare module "@elements/app" {
   interface SessionData {
     userId: string;
     userName: string;
+    /** Set on a visitor who posted before signing up. */
+    isGuest?: boolean;
   }
 }
 

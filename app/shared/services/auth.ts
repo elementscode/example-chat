@@ -72,6 +72,33 @@ export function signupUser(email: string, password: string) {
   session.login({ userId: user.id, userName });
 }
 
+/**
+ * Post without signing up. A guest is a real users row, so a message still
+ * has an author to hang off and the FK holds, but its email is random and
+ * its password is a random uuid no one holds, so the row is not an account
+ * anyone can sign in to. Calling this with a session already open does
+ * nothing, which is what makes it safe to call before every post.
+ *
+ * @rpc
+ */
+export function joinAsGuest() {
+  if (session.isLoggedIn()) {
+    return;
+  }
+
+  let userName = `guest-${Math.random().toString(36).slice(2, 6)}`;
+
+  let user = sql<{ id: string }>(
+    `insert into users (email, userName, passwordHash)
+     values (genRandomUuid()::text || '@guest.invalid',
+             ${userName},
+             crypt(genRandomUuid()::text, genSalt('bf', 4)))
+     returning id`,
+  ).firstOrThrow();
+
+  session.login({ userId: user.id, userName, isGuest: true });
+}
+
 /** @rpc */
 export function logoutUser() {
   session.logout();

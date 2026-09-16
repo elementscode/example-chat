@@ -1,14 +1,11 @@
-import { Request, Response, sql, session, redirect } from "@elements/app";
+import { Request, Response, sql, redirect } from "@elements/app";
 
 /**
- * The workspace root. Signed out goes to signin; signed in opens the oldest
- * channel, which is #general on a fresh install.
+ * The workspace root. It opens the oldest channel, which is #general on a
+ * fresh install. There is no sign in wall: a visitor reads the conversation
+ * straight away, and signs up only when they want a name that sticks.
  */
 export default function route(req: Request, res: Response) {
-  if (!session.isLoggedIn()) {
-    return redirect("/signin");
-  }
-
   let first = sql<{ id: string }>(
     `select id from chatRooms order by createdAt limit 1`,
   ).firstOrThrow("no channels exist");

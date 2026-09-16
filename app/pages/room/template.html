@@ -1,7 +1,7 @@
 import "./style.css";
 import { LiveView, LifecycleEvent, session, redirect } from "@elements/app";
 import { Room, Message, createRoom } from "#app/shared/services/chat";
-import { logoutUser } from "#app/shared/services/auth";
+import { joinAsGuest, logoutUser } from "#app/shared/services/auth";
 import config from "#config";
 
 // event handlers
@@ -10,6 +10,11 @@ function onSend(feed: LiveView<Message>, draft: { value: string }) {
   if (draft.value.trim().length === 0) {
     return;
   }
+
+  // A visitor who has not signed up posts under a guest name. Once they have
+  // a session this is a no-op, so the first message is the only one that
+  // pays for it.
+  joinAsGuest();
 
   feed.insert(
     {
@@ -24,6 +29,8 @@ function onSend(feed: LiveView<Message>, draft: { value: string }) {
 
 function onAddChannel(form: { name: string; error: string }) {
   try {
+    joinAsGuest();
+
     let id = createRoom(form.name, "");
     form.name = "";
     form.error = "";
@@ -127,6 +134,17 @@ function initial(name: string): string {
   return name.slice(0, 1);
 }
 
+// Reading the session in a template is reactive, so the sidebar and the
+// composer hint both flip the moment a guest joins or an account signs in.
+function meName(): string {
+  return session.get("userName") ?? "guest";
+}
+
+/** True for a real account, false for an anonymous visitor or a guest. */
+function isMember(): boolean {
+  return session.isLoggedIn() && !session.get("isGuest");
+}
+
 // Avatar hues sit in a 100-degree band around the Elements blue rather than
 // the whole wheel, so a channel full of people still reads as one palette.
 function hue(name: string): string {
@@ -186,11 +204,10 @@ function counted(n: number): string {
         </nav>
 
         <div class="chat-me">
-          <span class="avatar is-sm" style={hue(session.get("userName") ?? "")}>
-            {initial(session.get("userName") ?? "")}
-          </span>
-          <span class="chat-me-name">{session.get("userName")}</span>
-          <button class="chat-signout" onclick={() => onSignOut()}>Sign out</button>
+          <span class="avatar is-sm" style={hue(meName())}>{initial(meName())}</span>
+          <span class="chat-me-name">{meName()}</span>
+          <button e:if={isMember()} class="chat-signout" onclick={() => onSignOut()}>Sign out</button>
+          <a e:else class="button chat-signout" href="/signup">Sign up</a>
         </div>
       </aside>
 
@@ -230,7 +247,11 @@ function counted(n: number): string {
             </button>
           </div>
 
-          <p class="chat-hint">Press <kbd>Enter</kbd> to send.</p>
+          <p e:if={isMember()} class="chat-hint">Press <kbd>Enter</kbd> to send.</p>
+          <p e:else class="chat-hint">
+            Press <kbd>Enter</kbd> to send. You are posting as a guest.
+            <a href="/signup">Create an account</a> to keep your name.
+          </p>
         </form>
       </div>
     </div>

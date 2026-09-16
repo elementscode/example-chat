@@ -20,3 +20,8 @@ Thumbs.db
 
 *.log
 npm-debug.log*
+
+# Resolved at install time, never shipped. A committed lockfile pins every
+# @elements/* dependency to whatever its author last resolved, which hands a
+# new project an old framework.
+package.lock
